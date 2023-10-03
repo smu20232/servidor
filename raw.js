@@ -1,0 +1,1 @@
+window.mediasoup = require("mediasoup-client");
