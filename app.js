@@ -93,13 +93,17 @@ io.on('connection', async socket => {
         producers = removeItems(producers, socket.id, 'producer')
         transports = removeItems(transports, socket.id, 'transport')
 
-        const { roomName } = peers[socket.id]
-        delete peers[socket.id]
+        if (peers[socket.id] === undefined) {
+            console.log('undefined');
+        } else {
+            const { roomName } = peers[socket.id]
+            delete peers[socket.id]
 
-        // remove socket from room
-        rooms[roomName] = {
-            router: rooms[roomName].router,
-            peers: rooms[roomName].peers.filter(socketId => socketId !== socket.id)
+            // remove socket from room
+            rooms[roomName] = {
+                router: rooms[roomName].router,
+                peers: rooms[roomName].peers.filter(socketId => socketId !== socket.id)
+            }
         }
     })
 
@@ -381,7 +385,7 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '191.36.8.57', 
+                        ip: '191.36.8.57',
                         announcedIp: '191.36.8.57',
                     }
                 ],
