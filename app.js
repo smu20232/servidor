@@ -32,7 +32,7 @@ const createWorker = async () => {
 
   worker.on('died', error => {
     // This implies something serious happened, so kill the application
-    console.error('mediasoup worker has died')
+    console.error('mediasoup worker has died', error)
     setTimeout(() => process.exit(1), 2000) // exit in 2 seconds
   })
 
@@ -104,11 +104,19 @@ io.on('connection', async socket => {
     }
   })
 
+  socket.on('sendChat', async ({ roomName, message, nome }, callback) => {
+    console.log(message)
+    // const mensagemm = { message, nome }
+    io.to(roomName).emit('receiveChat', { message, nome })
+    const res = true
+    callback(res)
+  })
+
   socket.on('joinRoom', async ({ roomName }, callback) => {
     // create Router if it does not exist
     // const router1 = rooms[roomName] && rooms[roomName].get('data').router || await createRoom(roomName, socket.id)
     const router1 = await createRoom(roomName, socket.id)
-
+    socket.join(roomName)
     peers[socket.id] = {
       socket,
       roomName, // Name for the Router this Peer joined
@@ -125,6 +133,7 @@ io.on('connection', async socket => {
     const rtpCapabilities = router1.rtpCapabilities
 
     // call callback from the client and send back the rtpCapabilities
+    // eslint-disable-next-line n/no-callback-literal
     callback({ rtpCapabilities })
   })
 
@@ -164,6 +173,7 @@ io.on('connection', async socket => {
 
     createWebRtcTransport(router).then(
       transport => {
+        // eslint-disable-next-line n/no-callback-literal
         callback({
           params: {
             id: transport.id,
@@ -291,6 +301,7 @@ io.on('connection', async socket => {
     })
 
     // Send back to the client the Producer's id
+    // eslint-disable-next-line n/no-callback-literal
     callback({
       id: producer.id,
       producersExist: producers.length > 1
@@ -353,10 +364,12 @@ io.on('connection', async socket => {
         }
 
         // send the parameters to the client
+        // eslint-disable-next-line n/no-callback-literal
         callback({ params })
       }
     } catch (error) {
       console.log(error.message)
+      // eslint-disable-next-line n/no-callback-literal
       callback({
         params: {
           error
